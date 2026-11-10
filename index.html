@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Наклейка на заднее стекло - демо макета</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+:root{--asph:#18191b;--asph2:#232528;--paper:#f1efe9;--ink:#141414;--sig:#ff5a1f;--mut:#8b8d91;--line:#33363a;--cut:#ff2fb3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--asph);color:var(--paper);font:400 16px/1.5 Onest,system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--mut);letter-spacing:.04em;text-transform:uppercase}
+header b{color:var(--paper);font-family:Unbounded;font-weight:600;letter-spacing:0}
+h1{font:800 clamp(30px,5vw,58px)/1.02 Unbounded,sans-serif;letter-spacing:-.02em;margin:48px 0 14px;max-width:900px}
+h1 em{font-style:normal;color:var(--sig)}
+.lead{color:#c9c7c1;max-width:640px;font-size:18px}
+.stage{display:grid;grid-template-columns:1fr 330px;gap:28px;margin:40px 0 70px;align-items:start}
+.view{background:var(--asph2);border:1px solid var(--line);border-radius:6px;position:relative;overflow:hidden;aspect-ratio:16/11}
+.view svg.scene{width:100%;height:100%;display:block}
+.road{fill:#1b1c1e}
+.lane{stroke:#3a3c40;stroke-width:6;stroke-dasharray:60 50;animation:lane 1.4s linear infinite}
+.parked .lane{animation:none}
+@keyframes lane{to{stroke-dashoffset:-110}}
+#car{transform-box:view-box;transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+#carIn{animation:arrive 1.8s cubic-bezier(.16,.84,.24,1) both}
+@keyframes arrive{0%{transform:translateY(160px) scale(.55);opacity:0}60%{opacity:1}100%{transform:none}}
+#body{animation:settle 2.3s ease-out both;transform-origin:400px 470px}
+@keyframes settle{0%,70%{transform:translateY(-6px)}80%{transform:translateY(3px)}90%{transform:translateY(-1px)}100%{transform:none}}
+.glass{fill:#2c3238}
+.night .glass{fill:#0d1013}
+.night .view{background:#0e0f11}
+.night .road{fill:#0f1012}
+.tl{fill:#7a1810;transition:fill .4s}
+.night .tl{fill:#ff3b26;filter:drop-shadow(0 0 14px #ff3b26)}
+#sticker{clip-path:url(#winClip)}
+#applyMask rect{animation:squeegee 1.1s 1.6s cubic-bezier(.6,0,.2,1) both}
+@keyframes squeegee{from{transform:translateX(-560px)}to{transform:none}}
+.squeegee{animation:sq 1.1s 1.6s cubic-bezier(.6,0,.2,1) both}
+@keyframes sq{0%{transform:translateX(-470px);opacity:1}92%{opacity:1}100%{transform:translateX(0);opacity:0}}
+/* layer modes */
+.m-white .ink{fill:#fff!important;stroke:none!important}
+.m-white .ink-t{fill:transparent!important}
+.m-white .glass{fill:url(#checker)}
+.m-white .qrd{fill:#fff}
+.cutl{fill:none;stroke:var(--cut);stroke-width:2.2;stroke-dasharray:7 5;opacity:0;transition:opacity .3s}
+.m-cut .cutl,.m-all .cutl{opacity:1}
+.m-cut .ink,.m-cut .qrd{opacity:.18}
+.panel{background:var(--asph2);border:1px solid var(--line);border-radius:6px;padding:20px}
+.grp{margin-bottom:22px}
+.grp h4{font:500 12px Onest;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-bottom:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button{background:transparent;color:var(--paper);border:1px solid var(--line);border-radius:4px;padding:10px 8px;font:500 14px Onest;cursor:pointer;transition:background .2s,border-color .2s,color .2s;text-align:left}
+.seg button:hover{border-color:#5a5d62}
+.seg button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+input[type=range]{width:100%;accent-color:var(--sig)}
+.dist{display:flex;justify-content:space-between;font-size:13px;color:var(--mut)}
+.dist b{color:var(--paper);font:600 22px Unbounded}
+.meter{margin-top:12px;display:grid;gap:8px}
+.mrow{display:flex;justify-content:space-between;font-size:14px;padding:8px 10px;border-radius:4px;background:#1c1d20;transition:background .3s}
+.mrow i{font-style:normal;font-weight:700}
+.ok i{color:#7bd88f}.no i{color:#ff7a5c}
+.cap{position:absolute;left:14px;bottom:12px;font-size:12px;color:var(--mut);background:#0009;padding:5px 9px;border-radius:3px;pointer-events:none}
+.legend{position:absolute;right:14px;top:12px;font-size:12px;display:none;gap:12px;background:#000a;padding:6px 10px;border-radius:3px}
+.m-white .legend.lw,.m-cut .legend.lc{display:flex}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.lw span::before{background:#fff}.lc span::before{border:2px dashed var(--cut)}
+section.spec{border-top:1px solid var(--line);padding:56px 0}
+section.spec h2{font:600 clamp(22px,3vw,32px) Unbounded;margin-bottom:28px;letter-spacing:-.01em}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.cols div{background:var(--asph);padding:22px}
+.cols b{display:block;font:600 15px Unbounded;margin-bottom:8px;color:var(--sig)}
+.cols p{color:#c9c7c1;font-size:15px}
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.files span{border:1px solid var(--line);padding:7px 12px;border-radius:3px;font-size:14px}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+footer{padding:30px 0 50px;color:var(--mut);font-size:13px;border-top:1px solid var(--line)}
+@media(max-width:900px){.stage{grid-template-columns:1fr}.cols{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><b>Демо макета</b><span>Наклейка · заднее стекло · white ink</span></header>
+<h1>Наклейка, которую <em>читают с дороги</em> и сканируют на парковке</h1>
+<p class="lead">Пример подхода на условном бренде: один макет - три слоя для типографии. Переключайте слои, двигайте дистанцию и проверьте, что видит водитель сзади. QR-код настоящий - наведите камеру.</p>
+
+<div class="stage" id="stage">
+ <div class="view">
+  <svg class="scene" viewBox="0 0 800 550" aria-label="Автомобиль с наклейкой">
+   <defs>
+    <pattern id="checker" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#3a3f45"/><rect width="8" height="8" fill="#2a2e33"/><rect x="8" y="8" width="8" height="8" fill="#2a2e33"/></pattern>
+    <clipPath id="winClip"><path id="winPath" d="M222 128 Q228 100 258 98 L542 98 Q572 100 578 128 L606 268 Q608 286 590 286 L210 286 Q192 286 194 268 Z"/></clipPath>
+    <mask id="applyMask"><rect x="180" y="80" width="460" height="230" fill="#fff"/></mask>
+   </defs>
+   <rect class="road" x="0" y="380" width="800" height="170"/>
+   <line class="lane" x1="400" y1="550" x2="400" y2="400"/>
+   <g id="car"><g id="carIn"><g id="body">
+    <ellipse cx="400" cy="500" rx="300" ry="22" fill="#000" opacity=".45"/>
+    <rect x="128" y="440" width="70" height="58" rx="10" fill="#0c0c0d"/>
+    <rect x="602" y="440" width="70" height="58" rx="10" fill="#0c0c0d"/>
+    <path d="M190 120 Q200 62 270 58 L530 58 Q600 62 610 120 L650 300 Q690 312 692 350 L694 440 Q694 476 660 478 L140 478 Q106 476 106 440 L108 350 Q110 312 150 300 Z" fill="#d9d6cf"/>
+    <path d="M108 350 L692 350 L694 400 L106 400 Z" fill="#c9c5bc"/>
+    <path class="glass" d="M222 128 Q228 100 258 98 L542 98 Q572 100 578 128 L606 268 Q608 286 590 286 L210 286 Q192 286 194 268 Z"/>
+    <g id="sticker" mask="url(#applyMask)"></g>
+    <path d="M222 128 Q228 100 258 98 L542 98" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="10"/>
+    <path class="tl" d="M118 318 L196 312 L200 352 L114 356 Z"/><path class="tl" d="M682 318 L604 312 L600 352 L686 356 Z"/>
+    <rect x="330" y="372" width="140" height="34" rx="3" fill="#f4f4f2" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="400" y="396" text-anchor="middle" font-family="Onest" font-weight="700" font-size="19" fill="#1a1a1a">A 000 AA 77</text>
+    <rect x="120" y="424" width="560" height="40" rx="8" fill="#2a2b2e"/>
+    <rect class="squeegee" x="196" y="96" width="14" height="194" rx="3" fill="var(--sig)"/>
+   </g></g></g>
+  </svg>
+  <div class="legend lw"><span>белая подложка</span></div>
+  <div class="legend lc"><span>контур плоттерной резки</span></div>
+  <div class="cap" id="cap">Дистанция 5 м · как видят на улице</div>
+ </div>
+
+ <aside class="panel">
+  <div class="grp"><h4>Вариант композиции</h4>
+   <div class="seg" id="varSeg"><button class="on" data-v="a">А · плашки</button><button data-v="b">Б · акцент на QR</button></div></div>
+  <div class="grp"><h4>Слой для типографии</h4>
+   <div class="seg" id="laySeg"><button class="on" data-m="">Цвет</button><button data-m="m-white">White ink</button><button data-m="m-cut">Контур резки</button><button data-m="m-all">Все слои</button></div></div>
+  <div class="grp"><h4>Освещение</h4>
+   <div class="seg" id="lightSeg"><button class="on" data-n="0">День</button><button data-n="1">Вечер</button></div></div>
+  <div class="grp"><h4>Дистанция до машины</h4>
+   <div class="dist"><span>1 м</span><b id="dval">5 м</b><span>25 м</span></div>
+   <input type="range" id="dist" min="1" max="25" value="5" step="1" aria-label="Дистанция">
+   <div class="meter">
+    <div class="mrow" id="r1"><span>Слоган (буквы 9 см)</span><i></i></div>
+    <div class="mrow" id="r2"><span>Название (буквы 5 см)</span><i></i></div>
+    <div class="mrow" id="r3"><span>QR 16 × 16 см</span><i></i></div>
+   </div>
+  </div>
+ </aside>
+</div>
+</div>
+
+<section class="spec"><div class="wrap">
+ <h2 class="reveal">Что уходит в типографию</h2>
+ <div class="cols reveal">
+  <div><b>01 Цвет</b><p>CMYK, профиль под плёнку типографии. Шрифты в кривых, вылеты 3 мм за контур. Цвета бренда сверяю по брендбуку.</p></div>
+  <div><b>02 White ink</b><p>Отдельный слой подложки spot-цветом «White», с поджатием 0,2 мм внутрь, чтобы белое не выглядывало по краям. Под QR - сплошная подложка, иначе он не считается на тёмном стекле.</p></div>
+  <div><b>03 Контур резки</b><p>Spot-линия «CutContour», 0,25 pt. Без острых углов и мелких «островков», которые не прорежутся и отклеятся на мойке.</p></div>
+ </div>
+ <div class="cols reveal" style="margin-top:28px">
+  <div><b>Читаемость</b><p>Слоган - до 4 слов. Высота букв от 7-9 см: читается метров с 25, то есть в пробке и на светофоре.</p></div>
+  <div><b>QR</b><p>16-18 см, коррекция ошибок M, тихая зона 4 модуля. Проверяю сканирование с 1,5-2 м с разных телефонов.</p></div>
+  <div><b>Обзор</b><p>Наклейка не перекрывает зону обзора и щётку заднего стекла - перед версткой сверяю размеры стекла под вашу модель авто.</p></div>
+ </div>
+ <div class="files reveal"><span>maket_print.pdf</span><span>maket_vector.eps</span><span>white_ink.pdf</span><span>cut_contour.pdf</span><span>preview_avto.jpg</span><span>исходник</span></div>
+</div></section>
+
+<div class="wrap"><footer>Демо подхода для задачи по наклейке на автомобиль. Бренд условный, финальный макет - в вашем фирменном стиле.</footer></div>
+
+<script>
+const NS="http://www.w3.org/2000/svg",st=document.getElementById('sticker');
+function el(t,a,p=st){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e}
+function txt(x,y,s,size,w,fill,anchor='start',fam='Unbounded',p=st){const e=el('text',{x,y,'font-size':size,'font-weight':w,'font-family':fam,fill,'text-anchor':anchor,class:'ink'},p);e.textContent=s;return e}
+function qr(x,y,size,p=st){
+ const q=qrcode(0,'M');q.addData(location.href.split('#')[0]||'https://didigood0401.github.io/nakleyka-avto-qr/');q.make();
+ const n=q.getModuleCount(),m=size/(n+8);
+ el('rect',{x,y,width:size,height:size,rx:6,fill:'#fff',class:'ink'},p);
+ let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${(x+(c+4)*m).toFixed(2)} ${(y+(r+4)*m).toFixed(2)}h${m.toFixed(2)}v${m.toFixed(2)}h-${m.toFixed(2)}z`;
+ el('path',{d,fill:'#141414',class:'qrd ink-t'},p);
+ el('rect',{x:x-3,y:y-3,width:size+6,height:size+6,rx:8,class:'cutl'},p);
+}
+function paw(cx,cy,s,fill,p=st){const g=el('g',{transform:`translate(${cx} ${cy}) scale(${s})`},p);
+ el('ellipse',{cx:0,cy:8,rx:13,ry:11,fill,class:'ink'},g);[[-15,-8],[-5,-16],[6,-16],[16,-8]].forEach(([a,b])=>el('ellipse',{cx:a,cy:b,rx:5,ry:6.5,fill,class:'ink'},g));return g}
+function build(v){
+ st.innerHTML='';
+ if(v==='a'){
+  el('rect',{x:226,y:150,width:236,height:72,rx:10,fill:'#ff5a1f',class:'ink'});
+  txt(242,183,'ГРУМИНГ',27,800,'#141414');txt(242,209,'приедет к вам',19,600,'#141414');
+  el('rect',{x:226,y:150,width:236,height:72,rx:10,class:'cutl'});
+  el('rect',{x:226,y:228,width:236,height:34,rx:8,fill:'#f1efe9',class:'ink'});
+  txt(240,251,'ЛАПА · мойка, стрижка, когти',13,500,'#141414','start','Onest');
+  el('rect',{x:226,y:228,width:236,height:34,rx:8,class:'cutl'});
+  qr(476,150,112);
+  txt(532,280,'наведите камеру',11,500,'#f1efe9','middle','Onest');
+  paw(560,128,.75,'#ff5a1f');el('circle',{cx:560,cy:128,r:24,class:'cutl'});
+ }else{
+  qr(330,112,140);
+  txt(400,276,'ГРУМИНГ НА ВЫЕЗДЕ',21,800,'#ff5a1f','middle');
+  el('rect',{x:270,y:256,width:260,height:28,rx:6,class:'cutl'});
+  txt(254,150,'ЛАПА',26,800,'#f1efe9','middle');el('rect',{x:214,y:124,width:82,height:36,rx:6,class:'cutl'});
+  paw(254,200,1,'#ff5a1f');el('circle',{cx:254,cy:198,r:30,class:'cutl'});
+  txt(546,150,'запись',15,600,'#f1efe9','middle','Onest');txt(546,170,'по QR',15,600,'#f1efe9','middle','Onest');
+  el('rect',{x:504,y:132,width:84,height:46,rx:6,class:'cutl'});
+ }
+}
+build('a');
+const stage=document.getElementById('stage'),cap=document.getElementById('cap'),car=document.getElementById('car');
+const names={'':'как видят на улице','m-white':'слой белой подложки','m-cut':'контур плоттерной резки','m-all':'цвет + контур'};
+let mode='';
+function seg(id,fn){const s=document.getElementById(id);s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;s.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));fn(b)})}
+seg('varSeg',b=>{build(b.dataset.v);upd()});
+seg('laySeg',b=>{stage.classList.remove('m-white','m-cut','m-all');mode=b.dataset.m;if(mode)stage.classList.add(mode);upd()});
+seg('lightSeg',b=>document.body.classList.toggle('night',b.dataset.n==='1'));
+const d=document.getElementById('dist');
+function row(id,ok){const r=document.getElementById(id);r.className='mrow '+(ok?'ok':'no');r.querySelector('i').textContent=ok?'читается':'не читается'}
+function upd(){const v=+d.value;document.getElementById('dval').textContent=v+' м';
+ const s=Math.max(.32,Math.min(1.45,5/v*.95+.05));
+ car.style.transform=`translate(${400*(1-s)}px,${(1-s)*330}px) scale(${s})`;
+ const blur=v>12?Math.min(2.2,(v-12)*.17):0;st.style.filter=blur?`blur(${blur}px)`:'';
+ row('r1',v<=25);row('r2',v<=14);row('r3',v<=2);
+ cap.textContent=`Дистанция ${v} м · ${names[mode]}`}
+d.addEventListener('input',upd);upd();
+setTimeout(()=>document.body.classList.add('parked'),2400);
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.reveal').forEach(x=>io.observe(x));
+</script>
+</body>
+</html>
